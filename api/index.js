@@ -1,26 +1,83 @@
 const { MongoClient, ObjectId } = require('mongodb');
+const axios = require('axios');
 
-// Conexión a MongoDB (reutiliza la conexión)
-let cachedClient = null;
 let cachedDb = null;
 
 async function connectToDatabase() {
     if (cachedDb) return cachedDb;
-    
     const client = new MongoClient(process.env.MONGODB_URI);
     await client.connect();
     cachedDb = client.db('helpdesk');
     return cachedDb;
 }
 
-// Manejador principal de Vercel
+// ============================================
+// FUNCIÓN PARA CREAR TARJETA EN TRELLO
+// ============================================
+async function createTrelloCard(ticketData, ticketId) {
+    // Obtener las variables de entorno
+    const trelloKey = process.env.TRELLO_API_KEY;
+    const trelloToken = process.env.TRELLO_TOKEN;
+    const trelloListId = process.env.TRELLO_LIST_ID;
+    
+    // Verificar que existan las variables
+    if (!trelloKey || !trelloToken || !trelloListId) {
+        console.log('⚠️ Trello no configurado. Faltan variables:', {
+            key: !!trelloKey,
+            token: !!trelloToken,
+            listId: !!trelloListId
+        });
+        return null;
+    }
+    
+    // Crear el contenido de la tarjeta
+    const cardTitle = `[URGENTE] ${ticketData.titulo}`;
+    const cardDescription = `
+**Ticket de Soporte Urgente**
+
+**ID del ticket:** ${ticketId}
+**Usuario:** ${ticketData.email_usuario}
+**Prioridad:** ${ticketData.prioridad}
+
+**Descripción:**
+${ticketData.descripcion}
+
+**Fecha:** ${new Date().toLocaleString()}
+
+---
+Creado automáticamente desde Help Desk API
+    `.trim();
+    
+    try {
+        console.log('📨 Intentando crear tarjeta en Trello...');
+        const response = await axios.post('https://api.trello.com/1/cards', null, {
+            params: {
+                key: trelloKey,
+                token: trelloToken,
+                idList: trelloListId,
+                name: cardTitle,
+                desc: cardDescription,
+                pos: 'top'
+            }
+        });
+        
+        console.log('✅ Tarjeta creada:', response.data.url);
+        return response.data.url;
+    } catch (error) {
+        console.error('❌ Error creando tarjeta Trello:', error.response?.data || error.message);
+        return null;
+    }
+}
+
+// ============================================
+// MANEJADOR PRINCIPAL
+// ============================================
 module.exports = async (req, res) => {
     // Configurar CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
-    // Responder a preflight (OPTIONS)
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
@@ -68,7 +125,7 @@ module.exports = async (req, res) => {
         }
         
         // ============================================
-        // POST /tickets - Crear ticket
+        // POST /tickets - Crear ticket (CON TRELLO)
         // ============================================
         if (req.method === 'POST' && url === '/tickets') {
             const { titulo, descripcion, prioridad, email_usuario } = req.body;
@@ -91,12 +148,26 @@ module.exports = async (req, res) => {
                 fecha_actualizacion: new Date()
             };
             
+            // Guardar en MongoDB
             const result = await db.collection('tickets').insertOne(newTicket);
+            const ticketCreado = { ...newTicket, _id: result.insertedId };
+            
+            // ============================================
+            // 🌟 SI ES URGENTE, CREAR TARJETA EN TRELLO
+            // ============================================
+            let trelloCardUrl = null;
+            if (prioridad === 'urgente') {
+                console.log('🔥 Ticket urgente detectado. Creando tarjeta en Trello...');
+                trelloCardUrl = await createTrelloCard(newTicket, result.insertedId);
+            } else {
+                console.log('ℹ️ Ticket no urgente. No se crea tarjeta en Trello.');
+            }
             
             return res.status(201).json({ 
                 success: true, 
                 message: 'Ticket creado exitosamente',
-                data: { ...newTicket, _id: result.insertedId }
+                data: ticketCreado,
+                trello_card_url: trelloCardUrl
             });
         }
         
