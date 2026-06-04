@@ -1,9 +1,4 @@
 {
-    "functions": {
-        "api/index.js": {
-            "includeFiles": "public/**"
-        }
-    },
     "routes": [
         {
             "src": "/api/(.*)",
@@ -11,7 +6,7 @@
         },
         {
             "src": "/(.*)",
-            "dest": "/public/$1"
+            "dest": "/$1"
         }
     ]
 }

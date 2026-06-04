@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Desk - Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Dashboard</h1>
+            <p>Métricas y Estadísticas</p>
+        </div>
+        
+        <div class="nav">
+            <a href="/">📝 Crear Ticket</a>
+            <a href="/admin.html">🔒 Panel Agentes</a>
+            <a href="/dashboard.html" class="active">📊 Dashboard</a>
+        </div>
+        
+        <div class="content">
+            <div class="stats-grid" id="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTickets">0</div>
+                    <div class="stat-label">Total Tickets</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="urgentTickets">0</div>
+                    <div class="stat-label">Tickets Urgentes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="openTickets">0</div>
+                    <div class="stat-label">Abiertos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="closedTickets">0</div>
+                    <div class="stat-label">Cerrados</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 40px;">
+                <canvas id="ticketsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/dashboard.js"></script>
+</body>
+</html>

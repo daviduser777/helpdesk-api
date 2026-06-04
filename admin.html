@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Desk - Panel Agentes</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👨‍💼 Panel de Agentes</h1>
+            <p>Gestión de Tickets</p>
+        </div>
+        
+        <div class="nav">
+            <a href="/">📝 Crear Ticket</a>
+            <a href="/admin.html" class="active">🔒 Panel Agentes</a>
+            <a href="/dashboard.html">📊 Dashboard</a>
+            <a href="/login.html" id="logoutBtn">🚪 Cerrar Sesión</a>
+        </div>
+        
+        <div class="content">
+            <h2>Tickets del Sistema</h2>
+            <div id="loading" class="loading">Cargando tickets...</div>
+            <div id="ticketsList"></div>
+        </div>
+    </div>
+    
+    <script src="/admin.js"></script>
+</body>
+</html>
