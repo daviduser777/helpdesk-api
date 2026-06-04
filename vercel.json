@@ -1,12 +1,17 @@
 {
-    "rewrites": [
+    "functions": {
+        "api/index.js": {
+            "includeFiles": "public/**"
+        }
+    },
+    "routes": [
         {
-            "source": "/api/(.*)",
-            "destination": "/api/index.js"
+            "src": "/api/(.*)",
+            "dest": "/api/index.js"
         },
         {
-            "source": "/(.*)",
-            "destination": "/public/$1"
+            "src": "/(.*)",
+            "dest": "/public/$1"
         }
     ]
 }
